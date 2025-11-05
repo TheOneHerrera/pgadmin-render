@@ -1,8 +1,23 @@
-# Imagen base oficial de pgAdmin4
-FROM dpage/pgadmin4:latest
+# Imagen base ligera compatible con Render
+FROM python:3.11-alpine
 
-# Render bloquea el entrypoint original, así que lo sustituimos
-ENTRYPOINT []
+# Evita problemas de permisos
+ENV PYTHONUNBUFFERED=1
+ENV PGADMIN_DEFAULT_EMAIL=profesor@centro.edu
+ENV PGADMIN_DEFAULT_PASSWORD=admin123
+ENV PGADMIN_CONFIG_SERVER_MODE=True
 
-# Ejecutamos pgAdmin directamente con Python
-CMD ["python3", "/pgadmin4/pgAdmin4.py"]
+# Instalar dependencias necesarias
+RUN apk add --no-cache gcc musl-dev libffi-dev openssl-dev postgresql-dev \
+    && pip install --upgrade pip \
+    && pip install pgadmin4
+
+# Crear volumen para datos
+VOLUME ["/var/lib/pgadmin"]
+
+# Exponer el puerto 80
+EXPOSE 80
+
+# Ejecutar pgAdmin en modo servidor
+CMD ["python3", "-m", "pgadmin4"]
+
